@@ -4,63 +4,65 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Core LangChain ────────────────────────────────────────────────────────────
-langchain>=0.3.0
-langchain-core>=0.3.0
-langchain-community>=0.3.0
-langchain-openai>=0.2.0
-langchain-experimental>=0.3.0
-langchain-neo4j>=0.1.0
-langchain-ollama>=0.2.0
-langchain-cohere>=0.3.0
+langchain
+langchain-core
+langchain-community
+langchain-openai
+langchain-experimental
+langchain-neo4j
+langchain-ollama
+langchain-cohere
 
 # ── LangGraph (Agentic RAG) ───────────────────────────────────────────────────
-langgraph>=0.2.0
+langgraph
 
 # ── Vector Stores ─────────────────────────────────────────────────────────────
-chromadb>=0.5.0
-faiss-cpu>=1.8.0
-qdrant-client>=1.9.0
-pinecone-client>=4.0.0
+chromadb
+faiss-cpu
+qdrant-client
+pinecone-client
 
 # ── Document Loaders ─────────────────────────────────────────────────────────
-pypdf>=4.0.0
-pdfminer.six>=20221105
-pdfplumber>=0.11.0
-unstructured>=0.14.0
-beautifulsoup4>=4.12.0
-lxml>=5.0.0
+pypdf
+pdfminer.six
+pdfplumber
+unstructured
+beautifulsoup4
+lxml
 
 # ── Embeddings & NLP ─────────────────────────────────────────────────────────
-openai>=1.40.0
-sentence-transformers>=3.0.0
-tiktoken>=0.7.0
+langchain-huggingface
+langchain-groq
+openai
+sentence-transformers
+tiktoken
 
 # ── Sparse / Hybrid Retrieval ─────────────────────────────────────────────────
-rank-bm25>=0.2.2
+rank-bm25
 
 # ── Evaluation ────────────────────────────────────────────────────────────────
-ragas>=0.2.0
+ragas
 
 # ── Web Search Tools ─────────────────────────────────────────────────────────
-tavily-python>=0.3.0
-duckduckgo-search>=6.0.0
+tavily-python
+duckduckgo-search
 
 # ── Reranking ────────────────────────────────────────────────────────────────
-cohere>=5.0.0
+cohere
 
 # ── Data & Visualisation ──────────────────────────────────────────────────────
-numpy>=1.26.0
-pandas>=2.1.0
-matplotlib>=3.8.0
-scikit-learn>=1.4.0
-plotly>=5.20.0
+numpy
+pandas
+matplotlib
+scikit-learn
+plotly
 
 # ── Utilities ─────────────────────────────────────────────────────────────────
-python-dotenv>=1.0.0
-tqdm>=4.66.0
-pydantic>=2.6.0
+python-dotenv
+tqdm
+pydantic
 
 # ── Jupyter ───────────────────────────────────────────────────────────────────
-jupyter>=1.0.0
-ipykernel>=6.29.0
-nbformat>=5.9.0
+jupyter
+ipykernel
+nbformat
