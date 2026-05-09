@@ -1,0 +1,11 @@
+id,category,title,content,priority
+1,Hardware,Server Maintenance,Quarterly server maintenance involves checking logs and clearing cache.,High
+2,Software,CI/CD Pipeline,Automated testing should run on every pull request to ensure stability.,Medium
+3,Security,Firewall Rules,Update firewall rules weekly to block suspicious IP ranges from unauthorized zones.,Critical
+4,Management,Team Sync,Weekly syncs help align project goals and identify blockers early.,Low
+5,Hardware,GPU Clusters,Using H100 clusters can speed up model training by 10x compared to legacy units.,High
+6,Software,API Versioning,Always use semantic versioning for public APIs to avoid breaking changes.,Medium
+7,Documentation,Swagger Docs,Interactive documentation allows developers to test endpoints in real-time.,Medium
+8,Cloud,AWS S3 Storage,S3 buckets should be encrypted and access-controlled via IAM roles.,Critical
+9,Networking,DNS Latency,Reducing TTL can help in faster propagation of DNS updates across regions.,Low
+10,Monitoring,Grafana Dashboards,Real-time metrics help in identifying performance bottlenecks before users do.,Medium

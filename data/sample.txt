@@ -1,0 +1,26 @@
+# Deep Dive into Retrieval-Augmented Generation (RAG)
+
+Retrieval-Augmented Generation (RAG) is a breakthrough architectural pattern in the field of Large Language Models (LLMs). While LLMs like GPT-4, Llama 3, and Claude possess vast internal knowledge, they suffer from two primary limitations:
+1. Knowledge Cutoff: Their training data is static and does not include real-time or private information.
+2. Hallucination: They tend to confidently state false information when their training data is insufficient.
+
+RAG solves this by providing a "search engine" for the LLM. Instead of relying solely on its parameters, the model retrieves relevant snippets from an external knowledge base and uses them as grounding context for its generation.
+
+## The Core Components of RAG
+
+### 1. Document Ingestion
+This stage involves converting raw data (PDFs, HTML, JSON, CSV) into a standard format. Document loaders play a critical role here, handling the nuances of various file extensions and layouts.
+
+### 2. Chunking and Splitting
+Since LLMs have context window limits, documents must be broken down into smaller, manageable chunks. Strategies include:
+- Recursive Character Splitting: Hierarchically splitting by paragraphs, sentences, and words.
+- Semantic Chunking: Using embedding similarity to detect natural topic transitions.
+
+### 3. Embedding and Vector Storage
+Chunks are converted into high-dimensional vectors (embeddings) using models like HuggingFace's all-MiniLM-L6-v2. These are stored in specialized vector databases (ChromaDB, Pinecone, FAISS) for fast similarity search.
+
+### 4. Retrieval and Generation
+When a user asks a question, the system embeds the query, searches for relevant chunks, and passes them to the LLM (like Groq's Llama 3.1) alongside the prompt.
+
+## Conclusion
+RAG is essential for production-grade AI systems that require accuracy, transparency, and the ability to cite their sources.

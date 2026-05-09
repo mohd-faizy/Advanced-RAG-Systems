@@ -1,0 +1,26 @@
+[
+    {
+        "id": "faq_01",
+        "topic": "Deployment",
+        "question": "How do I deploy a LangGraph agent?",
+        "content": "Use LangGraph Cloud or a Docker container running Uvicorn.",
+        "tags": ["deployment", "langgraph", "cloud"],
+        "metadata": {"version": "1.0", "author": "dev_team"}
+    },
+    {
+        "id": "faq_02",
+        "topic": "Embeddings",
+        "question": "Which embedding model is best for RAG?",
+        "content": "For general use, all-MiniLM-L6-v2 is fast and free. For high precision, text-embedding-3-large is recommended.",
+        "tags": ["embeddings", "performance", "recommendation"],
+        "metadata": {"version": "1.2", "author": "ai_research"}
+    },
+    {
+        "id": "faq_03",
+        "topic": "Vector Stores",
+        "question": "Does ChromaDB support persistence?",
+        "content": "Yes, by specifying a persist_directory in the Client configuration.",
+        "tags": ["chromadb", "storage", "persistence"],
+        "metadata": {"version": "2.0", "author": "database_eng"}
+    }
+]
