@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🧠 Advanced RAG Systems
+<img src="_img/rag_banner.png" alt="Agentic AI with LangGraph"/>
+
+# Advanced RAG Systems
 
 **Build production-grade AI systems that retrieve, reason, and respond with precision.**
 
