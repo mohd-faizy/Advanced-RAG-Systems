@@ -1,28 +1,27 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# RAG Course — Complete Requirements
-# Install with: pip install -r requirements.txt
-# ─────────────────────────────────────────────────────────────────────────────
+# Advanced RAG Systems - free-first course requirements
+# Prefer `uv sync` when using pyproject.toml. This file is kept for pip users.
 
-# ── Core LangChain ────────────────────────────────────────────────────────────
+# Core LangChain / LangGraph
 langchain
 langchain-core
 langchain-community
-langchain-openai
+langchain-text-splitters
 langchain-experimental
-langchain-neo4j
-langchain-ollama
-langchain-cohere
-
-# ── LangGraph (Agentic RAG) ───────────────────────────────────────────────────
 langgraph
 
-# ── Vector Stores ─────────────────────────────────────────────────────────────
+# Free/default model providers
+langchain-groq
+langchain-huggingface
+sentence-transformers
+
+# Vector stores and retrieval
+langchain-chroma
 chromadb
 faiss-cpu
 qdrant-client
-pinecone-client
+rank-bm25
 
-# ── Document Loaders ─────────────────────────────────────────────────────────
+# Document loading
 pypdf
 pdfminer.six
 pdfplumber
@@ -30,39 +29,24 @@ unstructured
 beautifulsoup4
 lxml
 
-# ── Embeddings & NLP ─────────────────────────────────────────────────────────
-langchain-huggingface
-langchain-groq
-openai
-sentence-transformers
-tiktoken
-
-# ── Sparse / Hybrid Retrieval ─────────────────────────────────────────────────
-rank-bm25
-
-# ── Evaluation ────────────────────────────────────────────────────────────────
+# Evaluation
 ragas
 
-# ── Web Search Tools ─────────────────────────────────────────────────────────
-tavily-python
-duckduckgo-search
-
-# ── Reranking ────────────────────────────────────────────────────────────────
-cohere
-
-# ── Data & Visualisation ──────────────────────────────────────────────────────
+# Data, visualization, and notebooks
 numpy
 pandas
 matplotlib
 scikit-learn
 plotly
+jupyter
+ipykernel
+nbformat
 
-# ── Utilities ─────────────────────────────────────────────────────────────────
+# Utilities
 python-dotenv
 tqdm
 pydantic
 
-# ── Jupyter ───────────────────────────────────────────────────────────────────
-jupyter
-ipykernel
-nbformat
+# Optional local/graph extensions used in advanced examples
+langchain-ollama
+langchain-neo4j

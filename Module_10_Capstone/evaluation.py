@@ -22,7 +22,18 @@ from langchain_core.output_parsers import StrOutputParser
 
 
 # ── LLM Judge ─────────────────────────────────────────────────────────────────
-LLM = ChatGroq(model="llama-3.1-8b-instant", temperature=0)
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+_LLM: ChatGroq | None = None
+
+
+def get_llm() -> ChatGroq:
+    """Create the Groq judge lazily so this module can be imported without a key."""
+    global _LLM
+    if _LLM is None:
+        if not os.getenv("GROQ_API_KEY"):
+            raise RuntimeError("Set GROQ_API_KEY in .env before running evaluator metrics.")
+        _LLM = ChatGroq(model=GROQ_MODEL, temperature=0)
+    return _LLM
 
 
 # ── Manual Metrics (LLM-as-Judge) ─────────────────────────────────────────────
@@ -34,7 +45,7 @@ def score_faithfulness(answer: str, context: str) -> float:
         "Context: {context}\nAnswer: {answer}\n"
         "Reply ONLY 'yes' or 'no'."
     )
-    r = (prompt | LLM | StrOutputParser()).invoke({"context": context, "answer": answer})
+    r = (prompt | get_llm() | StrOutputParser()).invoke({"context": context, "answer": answer})
     return 1.0 if "yes" in r.lower() else 0.0
 
 
@@ -45,7 +56,7 @@ def score_relevancy(question: str, answer: str) -> float:
         "Question: {question}\nAnswer: {answer}\n"
         "Reply ONLY 'yes' or 'no'."
     )
-    r = (prompt | LLM | StrOutputParser()).invoke({"question": question, "answer": answer})
+    r = (prompt | get_llm() | StrOutputParser()).invoke({"question": question, "answer": answer})
     return 1.0 if "yes" in r.lower() else 0.0
 
 
@@ -60,7 +71,7 @@ def score_context_precision(question: str, contexts: list[str]) -> float:
     )
     relevant = 0
     for ctx in contexts:
-        r = (prompt | LLM | StrOutputParser()).invoke({"question": question, "context": ctx})
+        r = (prompt | get_llm() | StrOutputParser()).invoke({"question": question, "context": ctx})
         if "yes" in r.lower():
             relevant += 1
     return relevant / len(contexts)
@@ -121,7 +132,7 @@ PRODUCTION_CHECKLIST = """
 ║    • Use free local embeddings (all-MiniLM-L6-v2)                ║
 ║    • Use Groq free tier for development (llama-3.1-8b-instant)   ║
 ║  Monitoring                                                      ║
-║    • Enable LangSmith tracing (LANGCHAIN_TRACING_V2=true)        ║
+║    • Enable LangSmith tracing (LANGSMITH_TRACING=true)           ║
 ║    • Log retrieval latency and hit rates per query               ║
 ║  Common Pitfalls                                                 ║
 ║    • Chunk too small → poor context → use parent doc retriever   ║

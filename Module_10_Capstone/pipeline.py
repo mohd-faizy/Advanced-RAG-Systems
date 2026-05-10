@@ -45,7 +45,18 @@ class AgentState(TypedDict):
 
 
 # ── LLM ───────────────────────────────────────────────────────────────────────
-LLM = ChatGroq(model="llama-3.1-8b-instant", temperature=0)
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+_LLM: ChatGroq | None = None
+
+
+def get_llm() -> ChatGroq:
+    """Create the Groq client lazily so imports work before keys are configured."""
+    global _LLM
+    if _LLM is None:
+        if not os.getenv("GROQ_API_KEY"):
+            raise RuntimeError("Set GROQ_API_KEY in .env before running the agentic pipeline.")
+        _LLM = ChatGroq(model=GROQ_MODEL, temperature=0)
+    return _LLM
 
 
 # ── NODE FUNCTIONS ────────────────────────────────────────────────────────────
@@ -57,7 +68,7 @@ def classify_query(state: AgentState) -> AgentState:
         "or 'complex' (requires domain documents).\n"
         "Answer only 'simple' or 'complex'.\nQuestion: {question}"
     )
-    result = (prompt | LLM | StrOutputParser()).invoke({"question": state["question"]})
+    result = (prompt | get_llm() | StrOutputParser()).invoke({"question": state["question"]})
     complexity = "complex" if "complex" in result.lower() else "simple"
     return {**state, "complexity": complexity}
 
@@ -82,7 +93,7 @@ def grade_documents(state: AgentState) -> AgentState:
     )
     grades = []
     for doc in state["documents"]:
-        r = (grade_prompt | LLM | StrOutputParser()).invoke(
+        r = (grade_prompt | get_llm() | StrOutputParser()).invoke(
             {"question": state["question"], "document": doc.page_content[:300]}
         )
         grades.append("yes" in r.lower())
@@ -98,7 +109,7 @@ def rewrite_query(state: AgentState) -> AgentState:
         "Rewrite this query to be more specific for document retrieval.\n"
         "Original: {question}\nRewritten:"
     )
-    rewritten = (prompt | LLM | StrOutputParser()).invoke({"question": state["question"]})
+    rewritten = (prompt | get_llm() | StrOutputParser()).invoke({"question": state["question"]})
     return {**state, "rewritten_query": rewritten.strip()}
 
 
@@ -107,7 +118,7 @@ def direct_answer(state: AgentState) -> AgentState:
     prompt = ChatPromptTemplate.from_template(
         "Answer this question concisely.\nQuestion: {question}"
     )
-    answer = (prompt | LLM | StrOutputParser()).invoke({"question": state["question"]})
+    answer = (prompt | get_llm() | StrOutputParser()).invoke({"question": state["question"]})
     return {**state, "answer": answer, "citations": []}
 
 
@@ -126,7 +137,7 @@ def generate_with_citations(state: AgentState) -> AgentState:
         "Cite source numbers in brackets, e.g. [1].\n\n"
         "Context:\n{context}\n\nQuestion: {question}\nAnswer:"
     )
-    answer = (prompt | LLM | StrOutputParser()).invoke(
+    answer = (prompt | get_llm() | StrOutputParser()).invoke(
         {"context": context, "question": state["question"]}
     )
     return {**state, "answer": answer, "citations": citations}

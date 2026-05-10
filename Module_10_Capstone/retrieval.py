@@ -14,16 +14,18 @@ Usage:
 
 from __future__ import annotations
 import os
+from dotenv import load_dotenv
 from langchain_core.documents import Document
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.retrievers import BM25Retriever
 from sentence_transformers import CrossEncoder
 
+load_dotenv()
 os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-EMBED_MODEL     = "all-MiniLM-L6-v2"
+EMBED_MODEL     = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 RERANKER_MODEL  = "cross-encoder/ms-marco-TinyBERT-L-2-v2"
 PERSIST_DIR     = "./chroma_capstone_db"
 DEFAULT_K       = 5
@@ -34,7 +36,7 @@ RERANK_TOP_N    = 3
 def hybrid_retrieve(query: str, bm25_retriever, dense_retriever, k: int = DEFAULT_K) -> list[Document]:
     """
     Combine BM25 sparse + Chroma dense results using simple union dedup.
-    This avoids the deprecated EnsembleRetriever.
+    This keeps the retrieval blend explicit and easy to inspect.
     """
     sparse_docs = bm25_retriever.invoke(query)
     dense_docs = dense_retriever.invoke(query)

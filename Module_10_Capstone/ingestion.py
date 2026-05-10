@@ -13,7 +13,7 @@ Usage:
 import os
 import hashlib
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+os.environ.setdefault("USER_AGENT", "Advanced-RAG-Systems/0.1")
 
 from langchain_community.document_loaders import (
     PyPDFLoader,
@@ -29,14 +30,14 @@ from langchain_community.document_loaders import (
     WebBaseLoader,
 )
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 
 # ── Config ────────────────────────────────────────────────────────────────────
 CHUNK_SIZE    = 512
 CHUNK_OVERLAP = 80
-EMBED_MODEL   = "all-MiniLM-L6-v2"
+EMBED_MODEL   = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 PERSIST_DIR   = "./chroma_capstone_db"
 
 
@@ -76,7 +77,7 @@ def enrich_metadata(docs: list[Document], source: str) -> list[Document]:
             "source"      : source,
             "chunk_index" : i,
             "chunk_id"    : hashlib.md5(doc.page_content.encode()).hexdigest()[:10],
-            "ingested_at" : datetime.utcnow().isoformat(),
+            "ingested_at" : datetime.now(timezone.utc).isoformat(),
             "char_count"  : len(doc.page_content),
         }
         enriched.append(Document(page_content=doc.page_content, metadata=meta))
