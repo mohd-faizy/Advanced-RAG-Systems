@@ -2,7 +2,9 @@
 Module 10 — Capstone: Multi-Document Ingestion Pipeline
 ========================================================
 Handles loading, splitting, metadata enrichment, and indexing
-into a Chroma vector store with hybrid search support.
+into a Chroma vector store.
+
+Stack: HuggingFace Embeddings (all-MiniLM-L6-v2) — fully free, no API key needed.
 
 Usage:
     python ingestion.py --docs_dir ./data --collection my_rag
@@ -18,23 +20,24 @@ from typing import Optional
 from dotenv import load_dotenv
 load_dotenv()
 
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+
 from langchain_community.document_loaders import (
     PyPDFLoader,
     TextLoader,
     CSVLoader,
-    JSONLoader,
     WebBaseLoader,
 )
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAIEmbeddings
-from langchain.schema import Document
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_core.documents import Document
 
 # ── Config ────────────────────────────────────────────────────────────────────
 CHUNK_SIZE    = 512
 CHUNK_OVERLAP = 80
-EMBED_MODEL   = "text-embedding-3-small"
-PERSIST_DIR   = "./chroma_db"
+EMBED_MODEL   = "all-MiniLM-L6-v2"
+PERSIST_DIR   = "./chroma_capstone_db"
 
 
 # ── Loaders dispatch table ────────────────────────────────────────────────────
@@ -45,8 +48,6 @@ def load_file(path: str) -> list[Document]:
         ".pdf" : lambda: PyPDFLoader(path).load(),
         ".txt" : lambda: TextLoader(path).load(),
         ".csv" : lambda: CSVLoader(path).load(),
-        ".json": lambda: JSONLoader(path, jq_schema=".[].content",
-                                    text_content=False).load(),
         ".md"  : lambda: TextLoader(path).load(),
     }
     loader_fn = dispatch.get(ext)
@@ -101,14 +102,14 @@ def ingest_to_vectorstore(
     collection_name: str,
     persist_dir: str = PERSIST_DIR,
 ) -> Chroma:
-    embeddings = OpenAIEmbeddings(model=EMBED_MODEL)
-    vs = Chroma(
+    embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
+    vs = Chroma.from_documents(
+        chunks,
+        embeddings,
         collection_name=collection_name,
-        embedding_function=embeddings,
         persist_directory=persist_dir,
     )
-    ids = vs.add_documents(chunks)
-    print(f"  📦  Indexed {len(ids)} chunks into '{collection_name}'")
+    print(f"  📦  Indexed {len(chunks)} chunks into '{collection_name}'")
     return vs
 
 

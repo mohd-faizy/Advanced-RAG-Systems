@@ -2,141 +2,93 @@
 Module 10 — Capstone: Hybrid Retrieval with Re-ranking
 =======================================================
 Provides a unified retriever that combines:
-  - Dense semantic search (Chroma)
+  - Dense semantic search (Chroma + HuggingFace)
   - Sparse keyword search (BM25)
   - Cross-encoder re-ranking (sentence-transformers)
-  - Optional contextual compression
+
+Stack: Fully free — no paid API keys required.
 
 Usage:
-    from retrieval import build_hybrid_retriever, retrieve_and_rerank
+    from retrieval import retrieve_and_rerank
 """
 
 from __future__ import annotations
-from typing import Optional
-from langchain.schema import Document
+import os
+from langchain_core.documents import Document
 from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.retrievers import BM25Retriever
-from langchain.retrievers import EnsembleRetriever, ContextualCompressionRetriever
-from langchain.retrievers.document_compressors import EmbeddingsFilter
 from sentence_transformers import CrossEncoder
 
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-EMBED_MODEL     = "text-embedding-3-small"
-RERANKER_MODEL  = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-PERSIST_DIR     = "./chroma_db"
+EMBED_MODEL     = "all-MiniLM-L6-v2"
+RERANKER_MODEL  = "cross-encoder/ms-marco-TinyBERT-L-2-v2"
+PERSIST_DIR     = "./chroma_capstone_db"
 DEFAULT_K       = 5
 RERANK_TOP_N    = 3
 
 
-# ── Build hybrid retriever ────────────────────────────────────────────────────
-def build_hybrid_retriever(
-    collection_name: str,
-    all_docs: list[Document],
-    dense_weight: float = 0.6,
-    k: int = DEFAULT_K,
-    compress: bool = False,
-) -> EnsembleRetriever | ContextualCompressionRetriever:
+# ── Custom Hybrid Retriever (pure Python) ─────────────────────────────────────
+def hybrid_retrieve(query: str, bm25_retriever, dense_retriever, k: int = DEFAULT_K) -> list[Document]:
     """
-    Returns an EnsembleRetriever combining:
-      - BM25 sparse retriever (from in-memory docs)
-      - Chroma dense retriever
-
-    Args:
-        collection_name : Chroma collection name
-        all_docs        : Full list of Documents (needed for BM25)
-        dense_weight    : Weight for dense retriever (1-dense_weight for BM25)
-        k               : Number of docs to retrieve
-        compress        : Whether to add EmbeddingsFilter compression
+    Combine BM25 sparse + Chroma dense results using simple union dedup.
+    This avoids the deprecated EnsembleRetriever.
     """
-    embeddings = OpenAIEmbeddings(model=EMBED_MODEL)
+    sparse_docs = bm25_retriever.invoke(query)
+    dense_docs = dense_retriever.invoke(query)
 
-    # Dense retriever
-    vs = Chroma(
-        collection_name=collection_name,
-        embedding_function=embeddings,
-        persist_directory=PERSIST_DIR,
-    )
-    dense_retriever = vs.as_retriever(search_kwargs={"k": k})
-
-    # Sparse BM25 retriever
-    bm25_retriever = BM25Retriever.from_documents(all_docs, k=k)
-
-    # Ensemble
-    retriever = EnsembleRetriever(
-        retrievers=[bm25_retriever, dense_retriever],
-        weights=[1 - dense_weight, dense_weight],
-    )
-
-    # Optional: add embedding-based compression
-    if compress:
-        compressor = EmbeddingsFilter(
-            embeddings=embeddings, similarity_threshold=0.75
-        )
-        retriever = ContextualCompressionRetriever(
-            base_compressor=compressor,
-            base_retriever=retriever,
-        )
-
-    return retriever
+    seen = set()
+    combined = []
+    for doc in dense_docs + sparse_docs:
+        doc_id = doc.page_content[:100]
+        if doc_id not in seen:
+            seen.add(doc_id)
+            combined.append(doc)
+    return combined[:k]
 
 
-# ── Cross-encoder re-ranker ───────────────────────────────────────────────────
+# ── Cross-encoder Re-ranker ───────────────────────────────────────────────────
 class CrossEncoderReranker:
-    """Two-stage retriever: EnsembleRetriever → cross-encoder re-rank."""
+    """Two-stage retriever: hybrid recall → cross-encoder precision."""
 
-    def __init__(
-        self,
-        base_retriever,
-        model_name: str = RERANKER_MODEL,
-        top_n: int = RERANK_TOP_N,
-    ):
-        self.base_retriever = base_retriever
-        self.cross_encoder  = CrossEncoder(model_name)
-        self.top_n          = top_n
+    def __init__(self, model_name: str = RERANKER_MODEL, top_n: int = RERANK_TOP_N):
+        self.cross_encoder = CrossEncoder(model_name)
+        self.top_n = top_n
 
-    def invoke(self, query: str) -> list[Document]:
-        # Stage 1: broad recall
-        candidates = self.base_retriever.invoke(query)
+    def rerank(self, query: str, candidates: list[Document]) -> list[Document]:
         if not candidates:
             return []
-
-        # Stage 2: precise re-ranking
-        pairs  = [(query, doc.page_content) for doc in candidates]
+        pairs = [(query, doc.page_content) for doc in candidates]
         scores = self.cross_encoder.predict(pairs)
         ranked = sorted(zip(scores, candidates), key=lambda x: x[0], reverse=True)
-
-        top_docs = [doc for _, doc in ranked[: self.top_n]]
-        return top_docs
+        return [doc for _, doc in ranked[:self.top_n]]
 
 
 # ── Convenience function ──────────────────────────────────────────────────────
 def retrieve_and_rerank(
     query: str,
-    collection_name: str,
     all_docs: list[Document],
+    vectorstore: Chroma,
     k: int = DEFAULT_K,
     top_n: int = RERANK_TOP_N,
-    compress: bool = True,
 ) -> list[Document]:
     """
     One-shot: build hybrid retriever + re-rank results.
-
     Returns top_n documents after cross-encoder re-ranking.
     """
-    hybrid    = build_hybrid_retriever(collection_name, all_docs, k=k, compress=compress)
-    reranker  = CrossEncoderReranker(hybrid, top_n=top_n)
-    results   = reranker.invoke(query)
-    return results
+    bm25 = BM25Retriever.from_documents(all_docs, k=k)
+    dense = vectorstore.as_retriever(search_kwargs={"k": k})
+
+    candidates = hybrid_retrieve(query, bm25, dense, k=k)
+
+    reranker = CrossEncoderReranker(top_n=top_n)
+    return reranker.rerank(query, candidates)
 
 
 # ── Demo ──────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    from langchain_community.vectorstores import Chroma
-    from langchain_openai import OpenAIEmbeddings
-    from langchain.schema import Document
-
     sample_docs = [
         Document(page_content="LangGraph is used for building agentic workflows with LLMs."),
         Document(page_content="FAISS provides efficient similarity search for dense vectors."),
@@ -145,16 +97,13 @@ if __name__ == "__main__":
         Document(page_content="Cross-encoders re-rank candidate documents with high accuracy."),
     ]
 
-    # Ingest into Chroma
-    emb = OpenAIEmbeddings(model=EMBED_MODEL)
-    vs  = Chroma.from_documents(
-        sample_docs, emb, collection_name="demo", persist_directory=PERSIST_DIR
-    )
+    emb = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
+    vs  = Chroma.from_documents(sample_docs, emb, collection_name="demo_retrieval")
 
     results = retrieve_and_rerank(
         "How does retrieval work in RAG?",
-        collection_name="demo",
         all_docs=sample_docs,
+        vectorstore=vs,
     )
 
     print("Re-ranked results:")
