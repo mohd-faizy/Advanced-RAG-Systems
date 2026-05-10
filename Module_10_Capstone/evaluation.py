@@ -118,8 +118,8 @@ PRODUCTION_CHECKLIST = """
 ║    • Cache embedding computations (semantic cache)               ║
 ║    • Cache frequent query results with TTL                       ║
 ║  Cost Optimization                                               ║
-║    • Use free local embeddings (all-MiniLM-L6-v2)               ║
-║    • Use Groq free tier for development (llama-3.1-8b-instant)  ║
+║    • Use free local embeddings (all-MiniLM-L6-v2)                ║
+║    • Use Groq free tier for development (llama-3.1-8b-instant)   ║
 ║  Monitoring                                                      ║
 ║    • Enable LangSmith tracing (LANGCHAIN_TRACING_V2=true)        ║
 ║    • Log retrieval latency and hit rates per query               ║
