@@ -2,7 +2,7 @@
 
 ## Adaptive Multi-Hop Research RAG Assistant
 
-This second capstone is intentionally different from Module 10. Module 10 focuses on a production-style RAG pipeline. Module 11 focuses on **advanced research-style RAG** where a single user question is decomposed into smaller retrieval tasks, searched through both dense and sparse retrieval, reranked locally, synthesized with citations, and checked for grounding.
+This second capstone Project focuses on a production-style RAG pipeline. Module 11 focuses on **advanced research-style RAG** where a single user question is decomposed into smaller retrieval tasks, searched through both dense and sparse retrieval, reranked locally, synthesized with citations, and checked for grounding.
 
 The project stays free-first:
 
