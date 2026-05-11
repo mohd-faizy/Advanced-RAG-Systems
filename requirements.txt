@@ -46,6 +46,7 @@ nbformat
 python-dotenv
 tqdm
 pydantic
+tiktoken
 
 # Optional local/graph extensions used in advanced examples
 langchain-ollama
