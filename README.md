@@ -32,6 +32,8 @@
 
 ## Overview
 
+![RAG Evolution Tree](_img/rag-evo-tree.png)
+
 **Advanced RAG Systems** is a comprehensive, hands-on curriculum for building modern **Retrieval-Augmented Generation (RAG)** applications with production-grade engineering patterns.
 
 It is both a structured course and a reference implementation. The notebooks move from basic retrieval pipelines to advanced retrievers, research-inspired RAG patterns, LangGraph agentic workflows, RAGAS evaluation, and two capstone projects.
@@ -59,26 +61,9 @@ This repo is intentionally **free-first**:
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    A["Documents"] --> B["Loaders and Chunkers"]
-    B --> C["Local Embeddings"]
-    C --> D[("Vector Store")]
-    E["User Query"] --> F["Query Transform / Router"]
-    F --> G["Retriever Layer"]
-    G --> D
-    G --> H["BM25 / Reranker / Graph"]
-    D --> I["Retrieved Context"]
-    H --> I
-    I --> J{"RAG Strategy"}
-    J -->|"Basic"| K["LCEL RAG Chain"]
-    J -->|"Advanced"| L["Fusion / HyDE / CRAG / Self-RAG"]
-    J -->|"Agentic"| M["LangGraph Workflow"]
-    K --> N["Grounded Answer"]
-    L --> N
-    M --> N
-    N --> O["RAGAS / Judge Metrics"]
-```
+![RAG System Flow](_img/rag-sys-flow.png)
+
+
 
 ---
 
@@ -166,7 +151,9 @@ Advanced-RAG-Systems/
 
 ---
 
-## Curriculum
+## Advanced RAG Curriculum Map
+
+![Advanced RAG Map](_img/adv-rag-map.png)
 
 ### Learning Path
 
