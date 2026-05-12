@@ -64,6 +64,156 @@ This repo is intentionally **free-first**:
 
 ---
 
+## Learning Outcomes
+
+By completing this repository, you will be able to:
+
+- Build production-ready RAG pipelines from scratch
+- Choose chunking, embedding, indexing, and retrieval strategies deliberately
+- Combine dense, sparse, ensemble, and reranked retrieval
+- Apply HyDE, CRAG, Self-RAG, RAG Fusion, and Graph RAG patterns
+- Build agentic RAG workflows with LangGraph
+- Evaluate faithfulness, relevancy, context precision, and context recall with RAGAS
+- Design adaptive multi-hop RAG workflows with query planning, retrieval traces, citations, and grounding checks
+- Design RAG systems with monitoring, cost, caching, and security in mind
+
+---
+
+## Quick Start - Free RAG in 60 Seconds
+
+```python
+import os
+from dotenv import load_dotenv
+from langchain_chroma import Chroma
+from langchain_core.documents import Document
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_groq import ChatGroq
+from langchain_huggingface import HuggingFaceEmbeddings
+
+load_dotenv()
+
+docs = [
+    Document(page_content="LangGraph helps build stateful, agentic RAG workflows.")
+]
+
+embeddings = HuggingFaceEmbeddings(
+    model_name=os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+)
+vectorstore = Chroma.from_documents(docs, embeddings, collection_name="quickstart")
+retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
+
+prompt = ChatPromptTemplate.from_template(
+    "Answer using only the context below.\n\nContext:\n{context}\n\nQuestion: {question}"
+)
+llm = ChatGroq(
+    model=os.getenv("GROQ_MODEL", "llama-3.1-8b-instant"),
+    temperature=0,
+)
+
+rag_chain = (
+    {"context": retriever, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+print(rag_chain.invoke("What does LangGraph help build?"))
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.13+
+- Git
+- `uv` recommended
+- `GROQ_API_KEY` only for notebooks/scripts that call an LLM
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/mohd-faizy/Advanced-RAG-Systems.git
+cd Advanced-RAG-Systems
+```
+
+Install with `uv`:
+
+```bash
+uv sync
+```
+
+Pip fallback:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Configure environment variables:
+
+```bash
+copy .env.example .env
+```
+
+Minimum `.env` for LLM notebooks:
+
+```ini
+GROQ_API_KEY=gsk_your_key_here
+GROQ_MODEL=llama-3.1-8b-instant
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+```
+
+Launch Jupyter:
+
+```bash
+uv run jupyter lab
+```
+
+Start with:
+
+```text
+Module_01_RAG_Fundamentals/01_introduction_to_rag.ipynb
+```
+
+---
+
+## Environment Variables
+
+| Variable | Required? | Used For |
+|:---|:---:|:---|
+| `GROQ_API_KEY` | Only for LLM calls | Groq chat completions |
+| `GROQ_MODEL` | Optional | Override the default Groq model |
+| `EMBEDDING_MODEL` | Optional | Swap local Hugging Face embedding model |
+| `LANGSMITH_API_KEY` | Optional | Tracing and debugging |
+| `LANGSMITH_TRACING` | Optional | Enable LangSmith tracing |
+| `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` | Optional | Graph RAG extensions |
+
+---
+
+## Tech Stack
+
+| Layer | Default Tooling |
+|:---|:---|
+| Framework | LangChain 1.x, LangGraph 1.x |
+| LLM | Groq `llama-3.1-8b-instant` |
+| Embeddings | `sentence-transformers/all-MiniLM-L6-v2` |
+| Vector Store | Chroma via `langchain-chroma` |
+| ANN Indexing | FAISS Flat, IVF, HNSW |
+| Sparse Retrieval | BM25 via `rank-bm25` |
+| Reranking | `sentence-transformers` CrossEncoder |
+| Graph RAG | Neo4j concepts and examples |
+| Evaluation | RAGAS with LangChain wrappers |
+| Tracing | Optional LangSmith |
+
+---
+
 ## Architecture
 
 <div align="center">
@@ -74,87 +224,14 @@ This repo is intentionally **free-first**:
 
 ---
 
-## Repository Structure
+## RAG vs Fine-Tuning vs Prompting
 
-```text
-Advanced-RAG-Systems/
-|
-|-- README.md
-|-- pyproject.toml
-|-- requirements.txt
-|-- uv.lock
-|-- .env.example
-|-- data/
-|
-|-- Module_01_RAG_Fundamentals/
-|   |-- 01_introduction_to_rag.ipynb
-|   `-- 02_rag_vs_finetuning_vs_prompting.ipynb
-|
-|-- Module_02_Document_Processing/
-|   |-- 01_document_loaders.ipynb
-|   |-- 02_text_splitting_strategies.ipynb
-|   |-- 03_chunking_best_practices.ipynb
-|   `-- 04_metadata_management.ipynb
-|
-|-- Module_03_Embeddings/
-|   |-- 01_how_embeddings_work.ipynb
-|   |-- 02_embedding_models_comparison.ipynb
-|   `-- 03_langchain_embeddings_implementation.ipynb
-|
-|-- Module_04_Vector_Stores/
-|   |-- 01_vector_store_comparison.ipynb
-|   |-- 02_vector_store_crud.ipynb
-|   `-- 03_indexing_strategies_ivf_hnsw.ipynb
-|
-|-- Module_05_Basic_Retrieval/
-|   |-- 01_similarity_search.ipynb
-|   |-- 02_similarity_score_threshold.ipynb
-|   |-- 03_mmr_retrieval.ipynb
-|   |-- 04_hybrid_search.ipynb
-|   `-- 05_ensemble_retriever.ipynb
-|
-|-- Module_06_Advanced_Retrieval/
-|   |-- 01_contextual_compression.ipynb
-|   |-- 02_parent_document_retriever.ipynb
-|   |-- 03_multi_query_retriever.ipynb
-|   |-- 04_self_query_retriever.ipynb
-|   `-- 05_reranking.ipynb
-|
-|-- Module_07_Advanced_RAG_Patterns/
-|   |-- 01_rag_fusion.ipynb
-|   |-- 02_hyde.ipynb
-|   |-- 03_corrective_rag.ipynb
-|   |-- 04_self_rag.ipynb
-|   `-- 05_graph_rag.ipynb
-|
-|-- Module_08_Agentic_RAG/
-|   |-- 01_intro_agentic_rag.ipynb
-|   |-- 02_rag_as_tool_for_agents.ipynb
-|   |-- 03_langgraph_rag_graph.ipynb
-|   `-- 04_multi_agent_patterns.ipynb
-|
-|-- Module_09_Evaluation/
-|   `-- 01_ragas_evaluation.ipynb
-|
-|-- Module_10_Capston_Proj_1/
-|   |-- README.md
-|   |-- How_to_Run_Capstone.ipynb
-|   |-- Production_RAG_Capstone.ipynb
-|   |-- ingestion.py
-|   |-- retrieval.py
-|   |-- pipeline.py
-|   `-- evaluation.py
-|
-`-- Module_11_Capston_Proj_2/
-    |-- README.md
-    |-- How_to_Run_Capstone_Proj_2.ipynb
-    |-- config.py
-    |-- corpus.py
-    |-- retrievers.py
-    |-- graph.py
-    |-- demo.py
-    `-- evaluation.py
-```
+| Approach | Knowledge Source | Best For | Freshness | Interpretability |
+|:---|:---|:---|:---|:---|
+| Prompt Engineering | Model weights + prompt context | Fast behavior changes | Stale unless prompt includes data | Low |
+| Fine-Tuning | Updated model weights | Style, format, task behavior | Stale after training | Low |
+| RAG | External documents | Knowledge-intensive answers | Fresh as your index | High |
+| Agentic RAG | Documents + tools + state | Multi-step decisions and repair loops | Fresh as tools/indexes | High |
 
 ---
 
@@ -279,42 +356,6 @@ Module 11 is different from Module 10. Module 10 teaches a production-style RAG 
 
 ---
 
-## Capstone Projects
-
-| Module | Project | Focus | Best Starting Point |
-|:---:|:---|:---|:---|
-| 10 | Production-Style RAG System | Ingestion, hybrid retrieval, reranking, LangGraph orchestration, and evaluation | `Module_10_Capston_Proj_1/How_to_Run_Capstone.ipynb` |
-| 11 | Adaptive Multi-Hop Research RAG Assistant | Query planning, multi-hop retrieval, dense + BM25 search, local reranking, citations, and grounding verification | `Module_11_Capston_Proj_2/How_to_Run_Capstone_Proj_2.ipynb` |
-
-### Module 11 Architecture
-
-```mermaid
-flowchart LR
-    A["User Research Question"] --> B["Groq Query Planner"]
-    B --> C["Focused Sub-Questions"]
-    C --> D["Dense Retrieval: Chroma + Local Embeddings"]
-    C --> E["Sparse Retrieval: BM25"]
-    D --> F["Merge and Deduplicate Evidence"]
-    E --> F
-    F --> G["Local Cross-Encoder Reranker"]
-    G --> H["Groq Citation-Based Synthesis"]
-    H --> I["Grounding Verification"]
-    I --> J["Final Answer + Retrieval Trace"]
-```
-
-### Module 11 Files
-
-| File | Purpose |
-|:---|:---|
-| `Module_11_Capston_Proj_2/README.md` | Project-specific overview and quick start |
-| `Module_11_Capston_Proj_2/How_to_Run_Capstone_Proj_2.ipynb` | Guided notebook runbook |
-| `Module_11_Capston_Proj_2/config.py` | Free-first settings and environment variables |
-| `Module_11_Capston_Proj_2/corpus.py` | Load documents, split chunks, create local Chroma index |
-| `Module_11_Capston_Proj_2/retrievers.py` | Adaptive dense + BM25 retriever with local reranking |
-| `Module_11_Capston_Proj_2/graph.py` | LangGraph planning, retrieval, generation, and verification workflow |
-| `Module_11_Capston_Proj_2/demo.py` | End-to-end runnable sample |
-| `Module_11_Capston_Proj_2/evaluation.py` | Citation coverage and source diversity helpers |
-
 ## Notebook Index
 
 | # | Notebook | Key Concepts | Module |
@@ -357,151 +398,41 @@ flowchart LR
 
 ---
 
-## RAG vs Fine-Tuning vs Prompting
+## Capstone Projects
 
-| Approach | Knowledge Source | Best For | Freshness | Interpretability |
-|:---|:---|:---|:---|:---|
-| Prompt Engineering | Model weights + prompt context | Fast behavior changes | Stale unless prompt includes data | Low |
-| Fine-Tuning | Updated model weights | Style, format, task behavior | Stale after training | Low |
-| RAG | External documents | Knowledge-intensive answers | Fresh as your index | High |
-| Agentic RAG | Documents + tools + state | Multi-step decisions and repair loops | Fresh as tools/indexes | High |
+| Module | Project | Focus | Best Starting Point |
+|:---:|:---|:---|:---|
+| 10 | Production-Style RAG System | Ingestion, hybrid retrieval, reranking, LangGraph orchestration, and evaluation | `Module_10_Capston_Proj_1/How_to_Run_Capstone.ipynb` |
+| 11 | Adaptive Multi-Hop Research RAG Assistant | Query planning, multi-hop retrieval, dense + BM25 search, local reranking, citations, and grounding verification | `Module_11_Capston_Proj_2/How_to_Run_Capstone_Proj_2.ipynb` |
 
----
+### Module 11 Architecture
 
-## Getting Started
-
-### Prerequisites
-
-- Python 3.13+
-- Git
-- `uv` recommended
-- `GROQ_API_KEY` only for notebooks/scripts that call an LLM
-
-### Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/mohd-faizy/Advanced-RAG-Systems.git
-cd Advanced-RAG-Systems
+```mermaid
+flowchart LR
+    A["User Research Question"] --> B["Groq Query Planner"]
+    B --> C["Focused Sub-Questions"]
+    C --> D["Dense Retrieval: Chroma + Local Embeddings"]
+    C --> E["Sparse Retrieval: BM25"]
+    D --> F["Merge and Deduplicate Evidence"]
+    E --> F
+    F --> G["Local Cross-Encoder Reranker"]
+    G --> H["Groq Citation-Based Synthesis"]
+    H --> I["Grounding Verification"]
+    I --> J["Final Answer + Retrieval Trace"]
 ```
 
-Install with `uv`:
+### Module 11 Files
 
-```bash
-uv sync
-```
-
-Pip fallback:
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Configure environment variables:
-
-```bash
-copy .env.example .env
-```
-
-Minimum `.env` for LLM notebooks:
-
-```ini
-GROQ_API_KEY=gsk_your_key_here
-GROQ_MODEL=llama-3.1-8b-instant
-EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
-```
-
-Launch Jupyter:
-
-```bash
-uv run jupyter lab
-```
-
-Start with:
-
-```text
-Module_01_RAG_Fundamentals/01_introduction_to_rag.ipynb
-```
-
----
-
-## Quick Start - Free RAG in 60 Seconds
-
-```python
-import os
-from dotenv import load_dotenv
-from langchain_chroma import Chroma
-from langchain_core.documents import Document
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough
-from langchain_groq import ChatGroq
-from langchain_huggingface import HuggingFaceEmbeddings
-
-load_dotenv()
-
-docs = [
-    Document(page_content="LangGraph helps build stateful, agentic RAG workflows.")
-]
-
-embeddings = HuggingFaceEmbeddings(
-    model_name=os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-)
-vectorstore = Chroma.from_documents(docs, embeddings, collection_name="quickstart")
-retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
-
-prompt = ChatPromptTemplate.from_template(
-    "Answer using only the context below.\n\nContext:\n{context}\n\nQuestion: {question}"
-)
-llm = ChatGroq(
-    model=os.getenv("GROQ_MODEL", "llama-3.1-8b-instant"),
-    temperature=0,
-)
-
-rag_chain = (
-    {"context": retriever, "question": RunnablePassthrough()}
-    | prompt
-    | llm
-    | StrOutputParser()
-)
-
-print(rag_chain.invoke("What does LangGraph help build?"))
-```
-
----
-
-## Tech Stack
-
-| Layer | Default Tooling |
+| File | Purpose |
 |:---|:---|
-| Framework | LangChain 1.x, LangGraph 1.x |
-| LLM | Groq `llama-3.1-8b-instant` |
-| Embeddings | `sentence-transformers/all-MiniLM-L6-v2` |
-| Vector Store | Chroma via `langchain-chroma` |
-| ANN Indexing | FAISS Flat, IVF, HNSW |
-| Sparse Retrieval | BM25 via `rank-bm25` |
-| Reranking | `sentence-transformers` CrossEncoder |
-| Graph RAG | Neo4j concepts and examples |
-| Evaluation | RAGAS with LangChain wrappers |
-| Tracing | Optional LangSmith |
-
----
-
-## Environment Variables
-
-| Variable | Required? | Used For |
-|:---|:---:|:---|
-| `GROQ_API_KEY` | Only for LLM calls | Groq chat completions |
-| `GROQ_MODEL` | Optional | Override the default Groq model |
-| `EMBEDDING_MODEL` | Optional | Swap local Hugging Face embedding model |
-| `LANGSMITH_API_KEY` | Optional | Tracing and debugging |
-| `LANGSMITH_TRACING` | Optional | Enable LangSmith tracing |
-| `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` | Optional | Graph RAG extensions |
-
----
+| `Module_11_Capston_Proj_2/README.md` | Project-specific overview and quick start |
+| `Module_11_Capston_Proj_2/How_to_Run_Capstone_Proj_2.ipynb` | Guided notebook runbook |
+| `Module_11_Capston_Proj_2/config.py` | Free-first settings and environment variables |
+| `Module_11_Capston_Proj_2/corpus.py` | Load documents, split chunks, create local Chroma index |
+| `Module_11_Capston_Proj_2/retrievers.py` | Adaptive dense + BM25 retriever with local reranking |
+| `Module_11_Capston_Proj_2/graph.py` | LangGraph planning, retrieval, generation, and verification workflow |
+| `Module_11_Capston_Proj_2/demo.py` | End-to-end runnable sample |
+| `Module_11_Capston_Proj_2/evaluation.py` | Citation coverage and source diversity helpers |
 
 ## Capstone CLI Usage
 
@@ -563,18 +494,102 @@ print(result["answer"])
 
 ---
 
-## Learning Outcomes
+## Repository Structure
 
-By completing this repository, you will be able to:
+```text
+Advanced-RAG-Systems/
+|
+|-- README.md
+|-- pyproject.toml
+|-- requirements.txt
+|-- uv.lock
+|-- .env.example
+|-- data/
+|
+|-- Module_01_RAG_Fundamentals/
+|   |-- 01_introduction_to_rag.ipynb
+|   `-- 02_rag_vs_finetuning_vs_prompting.ipynb
+|
+|-- Module_02_Document_Processing/
+|   |-- 01_document_loaders.ipynb
+|   |-- 02_text_splitting_strategies.ipynb
+|   |-- 03_chunking_best_practices.ipynb
+|   `-- 04_metadata_management.ipynb
+|
+|-- Module_03_Embeddings/
+|   |-- 01_how_embeddings_work.ipynb
+|   |-- 02_embedding_models_comparison.ipynb
+|   `-- 03_langchain_embeddings_implementation.ipynb
+|
+|-- Module_04_Vector_Stores/
+|   |-- 01_vector_store_comparison.ipynb
+|   |-- 02_vector_store_crud.ipynb
+|   `-- 03_indexing_strategies_ivf_hnsw.ipynb
+|
+|-- Module_05_Basic_Retrieval/
+|   |-- 01_similarity_search.ipynb
+|   |-- 02_similarity_score_threshold.ipynb
+|   |-- 03_mmr_retrieval.ipynb
+|   |-- 04_hybrid_search.ipynb
+|   `-- 05_ensemble_retriever.ipynb
+|
+|-- Module_06_Advanced_Retrieval/
+|   |-- 01_contextual_compression.ipynb
+|   |-- 02_parent_document_retriever.ipynb
+|   |-- 03_multi_query_retriever.ipynb
+|   |-- 04_self_query_retriever.ipynb
+|   `-- 05_reranking.ipynb
+|
+|-- Module_07_Advanced_RAG_Patterns/
+|   |-- 01_rag_fusion.ipynb
+|   |-- 02_hyde.ipynb
+|   |-- 03_corrective_rag.ipynb
+|   |-- 04_self_rag.ipynb
+|   `-- 05_graph_rag.ipynb
+|
+|-- Module_08_Agentic_RAG/
+|   |-- 01_intro_agentic_rag.ipynb
+|   |-- 02_rag_as_tool_for_agents.ipynb
+|   |-- 03_langgraph_rag_graph.ipynb
+|   `-- 04_multi_agent_patterns.ipynb
+|
+|-- Module_09_Evaluation/
+|   `-- 01_ragas_evaluation.ipynb
+|
+|-- Module_10_Capston_Proj_1/
+|   |-- README.md
+|   |-- How_to_Run_Capstone.ipynb
+|   |-- Production_RAG_Capstone.ipynb
+|   |-- ingestion.py
+|   |-- retrieval.py
+|   |-- pipeline.py
+|   `-- evaluation.py
+|
+`-- Module_11_Capston_Proj_2/
+    |-- README.md
+    |-- How_to_Run_Capstone_Proj_2.ipynb
+    |-- config.py
+    |-- corpus.py
+    |-- retrievers.py
+    |-- graph.py
+    |-- demo.py
+    `-- evaluation.py
+```
 
-- Build production-ready RAG pipelines from scratch
-- Choose chunking, embedding, indexing, and retrieval strategies deliberately
-- Combine dense, sparse, ensemble, and reranked retrieval
-- Apply HyDE, CRAG, Self-RAG, RAG Fusion, and Graph RAG patterns
-- Build agentic RAG workflows with LangGraph
-- Evaluate faithfulness, relevancy, context precision, and context recall with RAGAS
-- Design adaptive multi-hop RAG workflows with query planning, retrieval traces, citations, and grounding checks
-- Design RAG systems with monitoring, cost, caching, and security in mind
+---
+
+## Current Import Patterns
+
+This course uses the provider split packages expected by current LangChain integrations:
+
+```python
+from langchain_groq import ChatGroq
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langgraph.graph import StateGraph, END
+```
+
+RAGAS examples wrap LangChain models with `LangchainLLMWrapper` and `LangchainEmbeddingsWrapper`, so Groq and local Hugging Face embeddings can be used instead of OpenAI evaluator defaults.
 
 ---
 
@@ -594,21 +609,6 @@ By completing this repository, you will be able to:
 - [ ] Add API service wrapper for the capstone
 - [ ] Add Docker deployment template
 - [ ] Add monitoring dashboard example
-
----
-
-## Current Import Patterns
-
-This course uses the provider split packages expected by current LangChain integrations:
-
-```python
-from langchain_groq import ChatGroq
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_chroma import Chroma
-from langgraph.graph import StateGraph, END
-```
-
-RAGAS examples wrap LangChain models with `LangchainLLMWrapper` and `LangchainEmbeddingsWrapper`, so Groq and local Hugging Face embeddings can be used instead of OpenAI evaluator defaults.
 
 ---
 
