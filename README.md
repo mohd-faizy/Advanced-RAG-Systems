@@ -33,7 +33,7 @@
 ## Overview
 
 <div align="center">
-  <img src="_img/rag-evo-tree.png" width="300" alt="RAG Evolution Tree" />
+  <img src="_img/rag-evo-tree.png" width="400" alt="RAG Evolution Tree" />
 </div>
 
 **Advanced RAG Systems** is a comprehensive, hands-on curriculum for building modern **Retrieval-Augmented Generation (RAG)** applications with production-grade engineering patterns.
@@ -64,7 +64,7 @@ This repo is intentionally **free-first**:
 ## Architecture
 
 <div align="center">
-  <img src="_img/rag-sys-flow.png" width="300" alt="RAG System Flow" />
+  <img src="_img/rag-sys-flow.png" width="400" alt="RAG System Flow" />
 </div>
 
 
