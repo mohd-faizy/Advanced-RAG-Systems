@@ -64,7 +64,7 @@ This repo is intentionally **free-first**:
 ## Architecture
 
 <div align="center">
-  <img src="_img/rag-sys-flow.png" width="400" alt="RAG System Flow" />
+  <img src="_img/rag-sys-flow.png" width="450" alt="RAG System Flow" />
 </div>
 
 
