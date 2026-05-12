@@ -32,11 +32,12 @@
 
 ## Overview
 
+
+**Advanced RAG Systems** is a comprehensive, hands-on curriculum for building modern **Retrieval-Augmented Generation (RAG)** applications with production-grade engineering patterns.
+
 <div align="center">
   <img src="_img/rag-evo-tree.png" width="400" alt="RAG Evolution Tree" />
 </div>
-
-**Advanced RAG Systems** is a comprehensive, hands-on curriculum for building modern **Retrieval-Augmented Generation (RAG)** applications with production-grade engineering patterns.
 
 It is both a structured course and a reference implementation. The notebooks move from basic retrieval pipelines to advanced retrievers, research-inspired RAG patterns, LangGraph agentic workflows, RAGAS evaluation, and two capstone projects.
 
