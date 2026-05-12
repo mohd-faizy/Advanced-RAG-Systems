@@ -39,7 +39,9 @@
   <img src="_img/rag-evo-tree.png" width="400" alt="RAG Evolution Tree" />
 </div>
 
-It is both a structured course and a reference implementation. The notebooks move from basic retrieval pipelines to advanced retrievers, research-inspired RAG patterns, LangGraph agentic workflows, RAGAS evaluation, and two capstone projects.
+As illustrated in the **RAG Evolution Tree** above, the architecture of document retrieval has rapidly matured. What began as simple *Naive RAG* (straightforward chunking and semantic search) has evolved into *Advanced RAG* (incorporating hybrid search, query rewriting, and reranking), and is now shifting toward *Agentic RAG*, where stateful workflows dynamically route queries, reflect on retrieved context, and execute multi-hop reasoning.
+
+It is both a structured course and a reference implementation designed to guide you step-by-step along this exact evolutionary path. The notebooks move from basic retrieval pipelines to advanced retrievers, research-inspired RAG patterns, LangGraph agentic workflows, RAGAS evaluation, and two capstone projects.
 
 This repo is intentionally **free-first**:
 
