@@ -520,9 +520,6 @@ RAGAS examples wrap LangChain models with `LangchainLLMWrapper` and `LangchainEm
 - [x] RAGAS evaluation
 - [x] Production capstone project 1
 - [x] Adaptive multi-hop research RAG capstone project 2
-- [ ] Add API service wrapper for the capstone
-- [ ] Add Docker deployment template
-- [ ] Add monitoring dashboard example
 
 ---
 
